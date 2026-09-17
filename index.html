@@ -2,44 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Discord Webhook Spammer Prank</title>
+    <title>Discord Local Spam Prank Generator</title>
     <style>
         body {
             background-color: #313338;
             color: #dbdee1;
             font-family: 'gg sans', 'Noto Sans', Helvetica, Arial, sans-serif;
             display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
         }
 
-        .panel {
+        .control-panel {
+            width: 340px;
             background-color: #2b2d31;
-            padding: 24px;
-            border-radius: 8px;
-            width: 400px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 16px;
+            border-right: 1px solid #1f2023;
+            box-sizing: border-box;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #313338;
+            position: relative;
+        }
+
+        .header {
+            height: 48px;
+            border-bottom: 1px solid #1f2023;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            font-weight: bold;
+            font-size: 16px;
+            color: #f2f3f5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         h2 {
-            margin: 0 0 8px 0;
+            margin: 0 0 4px 0;
             color: #f2f3f5;
-            font-size: 20px;
+            font-size: 18px;
         }
 
         label {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             color: #949ba4;
             text-transform: uppercase;
         }
 
-        input {
+        input, select {
             background-color: #1e1f22;
             border: 1px solid transparent;
             border-radius: 4px;
@@ -51,7 +79,7 @@
             box-sizing: border-box;
         }
 
-        input:focus {
+        input:focus, select:focus {
             border-color: #5865f2;
         }
 
@@ -70,82 +98,146 @@
             background-color: #4752c4;
         }
 
-        .log-box {
-            background-color: #1e1f22;
-            border-radius: 4px;
-            padding: 10px;
-            height: 120px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 12px;
-            color: #22c55e;
+        .msg-card {
+            background-color: #2b2d31;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: fadeIn 0.2s ease-out;
+            border-left: 4px solid #ed4245;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #5865f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .msg-body h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            color: #f2f3f5;
+        }
+
+        .msg-body h4 span {
+            font-size: 11px;
+            color: #949ba4;
+            font-weight: normal;
+            margin-left: 6px;
+        }
+
+        .msg-body p {
+            margin: 0;
+            font-size: 13px;
+            color: #dbdee1;
         }
     </style>
 </head>
 <body>
 
-    <div class="panel">
-        <h2>Discord Webhook Prank Panel</h2>
+    <div class="control-panel">
+        <h2>Prank Config</h2>
         
         <div>
-            <label>Webhook URL</label>
-            <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/...">
+            <label>Target Username</label>
+            <input type="text" id="usernameInput" value="VictimUser">
         </div>
 
         <div>
-            <label>Target Username / ID</label>
-            <input type="text" id="target" placeholder="e.g. user123">
+            <label>Message Amount</label>
+            <input type="number" id="amountInput" value="10" min="1" max="100">
         </div>
 
-        <button onclick="fireSpam()">Deploy Scam Ads</button>
-
         <div>
-            <label>Live Console Log</label>
-            <div class="log-box" id="consoleLog">[+] Ready for input...</div>
+            <label>Ad / Scam Type</label>
+            <select id="adType">
+                <option value="nitro">Free Nitro Gift</option>
+                <option value="steam">Steam Gift Card</option>
+                <option value="ban">Account Suspension Alert</option>
+                <option value="crypto">Crypto Giveaway</option>
+            </select>
+        </div>
+
+        <button onclick="startSimulation()">Flood Simulation</button>
+    </div>
+
+    <div class="chat-area">
+        <div class="header">
+            <span id="targetHeader">@VictimUser - Simulated Inbox</span>
+        </div>
+        <div class="messages-container" id="msgContainer">
+            <div style="color: #949ba4; font-size: 13px; text-align: center; margin-top: 40px;">Configure settings and click "Flood Simulation" to begin.</div>
         </div>
     </div>
 
     <script>
-        async function fireSpam() {
-            const webhook = document.getElementById('webhook').value.trim();
-            const target = document.getElementById('target').value.trim();
-            const logBox = document.getElementById('consoleLog');
+        const templates = {
+            nitro: [
+                "Hey! Check this out, I accidentally bought you a 3-month Discord Nitro gift link: https://discord-nitro-gift.ru/claim?code=free",
+                "Free Nitro drop from community event! Claim now before it expires: https://discord.app-nitro.click",
+                "You've been selected for a complimentary Nitro boost. Redeem here: https://nitro-discord.promo"
+            ],
+            steam: [
+                "Yo, check out this $100 Steam Wallet code I won: https://steamcommunity-gift.com/claim?id=",
+                "Hey <user>, accept this game trade request or your inventory gets locked: https://steam-giveaway-Hub.net"
+            ],
+            ban: [
+                "URGENT: Your account has been reported for illegal transactions. Contact support immediately: https://discord-support-ticket.id/",
+                "Automated Safety Notice: Your profile will be deleted in 24 hours unless verified: https://verify-discord-user.com"
+            ],
+            crypto: [
+                "Elon Musk Bitcoin Giveaway! Send 0.1 BTC to receive 1.0 BTC back: https://elon-crypto-drop.org",
+                "Community Event Winner! Claim your 500 SOL token allocation: https://solana-airdrop-portal.net"
+            ]
+        };
 
-            if (!webhook || !target) {
-                logBox.innerHTML += `<br><span style="color:#ef4444;">[!] Error: Fill out both fields.</span>`;
-                return;
+        const botNames = ["NitroBot#0001", "SupportStaff#9992", "GiveawayKing#1337", "SteamAdmin#4040", "SecurityBot#8888"];
+
+        async function startSimulation() {
+            const username = document.getElementById('usernameInput').value.trim() || "User";
+            const amount = parseInt(document.getElementById('amountInput').value) || 10;
+            const type = document.getElementById('adType').value;
+            const container = document.getElementById('msgContainer');
+            
+            document.getElementById('targetHeader').textContent = `@${username} - Simulated Inbox`;
+            container.innerHTML = '';
+
+            const list = templates[type];
+
+            for (let i = 0; i < amount; i++) {
+                const randomMsg = list[Math.floor(Math.random() * list.length)].replaceAll('<user>', username);
+                const bot = botNames[Math.floor(Math.random() * botNames.length)];
+                
+                const card = document.createElement('div');
+                card.className = 'msg-card';
+                card.innerHTML = `
+                    <div class="avatar">${bot[0]}</div>
+                    <div class="msg-body">
+                        <h4>${bot} <span>Today at ${new Date().toLocaleTimeString()}</span></h4>
+                        <p>Hey @${username}, ${randomMsg}</p>
+                    </div>
+                `;
+
+                container.appendChild(card);
+                container.scrollTop = container.scrollHeight;
+                
+                await new Promise(r => setTimeout(r, 150));
             }
-
-            logBox.innerHTML += `<br>[*] Targeting user @${target}...`;
-
-            const payloads = [
-                `Hey <@${target}>, check out this free nitro link: https://discord-nitro-gift.com/free`,
-                `Attention <@${target}>: Your account was flagged for suspicious marketplace activity.`,
-                `<@${target}> You won the community raffle! Claim your prize here immediately.`,
-                `URGENT <@${target}>: Verify your email to avoid automatic account termination.`
-            ];
-
-            for (let i = 0; i < payloads.length; i++) {
-                try {
-                    const response = await fetch(webhook, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: payloads[i] })
-                    });
-
-                    if (response.ok || response.status === 204) {
-                        logBox.innerHTML += `<br>[>] Sent scam payload ${i+1}/${payloads.length}`;
-                    } else {
-                        logBox.innerHTML += `<br><span style="color:#eab308;">[!] Rate limit or blocked (${response.status})</span>`;
-                    }
-                } catch (err) {
-                    logBox.innerHTML += `<br><span style="color:#ef4444;">[!] Network error (CORS/Invalid Hook)</span>`;
-                    break;
-                }
-                logBox.scrollTop = logBox.scrollHeight;
-                await new Promise(r => setTimeout(r, 600));
-            }
-            logBox.innerHTML += `<br>[+] Sequence finished.`;
         }
     </script>
 </body>
