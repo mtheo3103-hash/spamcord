@@ -1,50 +1,152 @@
-import sys
-import time
-import requests
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Discord Webhook Spammer Prank</title>
+    <style>
+        body {
+            background-color: #313338;
+            color: #dbdee1;
+            font-family: 'gg sans', 'Noto Sans', Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
 
-def banner():
-    print("=" * 50)
-    print("      DISCORD SIMULATED PAYLOAD DISPATCHER")
-    print("=" * 50)
+        .panel {
+            background-color: #2b2d31;
+            padding: 24px;
+            border-radius: 8px;
+            width: 400px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
 
-def send_spam(webhook_url, target_user, count):
-    payloads = [
-        f"Hey <@{target_user}>, check out this free nitro link: https://discord-nitro-gift.com/free?user={target_user}",
-        f"Attention <@{target_user}>: Your account was flagged for suspicious marketplace activity.",
-        f"<@{target_user}> You won the community raffle! Claim your prize here immediately.",
-        f"URGENT <@{target_user}>: Verify your email to avoid automatic account termination."
-    ]
-    
-    headers = {'Content-Type': 'application/json'}
-    
-    print(f"\n[+] Targeting user identifier: {target_user}")
-    print(f"[+] Dispatching {count} payloads...\n")
-    
-    for i in range(1, count + 1):
-        msg = payloads[i % len(payloads)]
-        data = {"content": msg}
+        h2 {
+            margin: 0 0 8px 0;
+            color: #f2f3f5;
+            font-size: 20px;
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #949ba4;
+            text-transform: uppercase;
+        }
+
+        input {
+            background-color: #1e1f22;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            color: #dbdee1;
+            padding: 10px;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: #5865f2;
+        }
+
+        button {
+            background-color: #5865f2;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #4752c4;
+        }
+
+        .log-box {
+            background-color: #1e1f22;
+            border-radius: 4px;
+            padding: 10px;
+            height: 120px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            color: #22c55e;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="panel">
+        <h2>Discord Webhook Prank Panel</h2>
         
-        try:
-            response = requests.post(webhook_url, json=data, headers=headers)
-            if response.status_code == 204 or response.status_code == 200:
-                print(f"[>] Payload {i}/{count} delivered successfully.")
-            else:
-                print(f"[!] Rate-limited or error: {response.status_code}")
-        except Exception as e:
-            print(f"[!] Connection error: {e}")
-            
-        time.sleep(0.5)
+        <div>
+            <label>Webhook URL</label>
+            <input type="text" id="webhook" placeholder="https://discord.com/api/webhooks/...">
+        </div>
 
-if __name__ == "__main__":
-    banner()
-    hook = input("Enter Discord Webhook URL: ").strip()
-    user = input("Enter target username or ID: ").strip()
-    try:
-        num = int(input("Enter number of messages to send: ").strip())
-    except ValueError:
-        num = 5
-        
-    if hook and user:
-        send_spam(hook, user, num)
-    else:
-        print("[!] Missing required inputs.")
+        <div>
+            <label>Target Username / ID</label>
+            <input type="text" id="target" placeholder="e.g. user123">
+        </div>
+
+        <button onclick="fireSpam()">Deploy Scam Ads</button>
+
+        <div>
+            <label>Live Console Log</label>
+            <div class="log-box" id="consoleLog">[+] Ready for input...</div>
+        </div>
+    </div>
+
+    <script>
+        async function fireSpam() {
+            const webhook = document.getElementById('webhook').value.trim();
+            const target = document.getElementById('target').value.trim();
+            const logBox = document.getElementById('consoleLog');
+
+            if (!webhook || !target) {
+                logBox.innerHTML += `<br><span style="color:#ef4444;">[!] Error: Fill out both fields.</span>`;
+                return;
+            }
+
+            logBox.innerHTML += `<br>[*] Targeting user @${target}...`;
+
+            const payloads = [
+                `Hey <@${target}>, check out this free nitro link: https://discord-nitro-gift.com/free`,
+                `Attention <@${target}>: Your account was flagged for suspicious marketplace activity.`,
+                `<@${target}> You won the community raffle! Claim your prize here immediately.`,
+                `URGENT <@${target}>: Verify your email to avoid automatic account termination.`
+            ];
+
+            for (let i = 0; i < payloads.length; i++) {
+                try {
+                    const response = await fetch(webhook, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: payloads[i] })
+                    });
+
+                    if (response.ok || response.status === 204) {
+                        logBox.innerHTML += `<br>[>] Sent scam payload ${i+1}/${payloads.length}`;
+                    } else {
+                        logBox.innerHTML += `<br><span style="color:#eab308;">[!] Rate limit or blocked (${response.status})</span>`;
+                    }
+                } catch (err) {
+                    logBox.innerHTML += `<br><span style="color:#ef4444;">[!] Network error (CORS/Invalid Hook)</span>`;
+                    break;
+                }
+                logBox.scrollTop = logBox.scrollHeight;
+                await new Promise(r => setTimeout(r, 600));
+            }
+            logBox.innerHTML += `<br>[+] Sequence finished.`;
+        }
+    </script>
+</body>
+</html>
