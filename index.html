@@ -2,87 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Discord Local Spam Prank Generator</title>
+    <title>Discord Real API Dispatcher</title>
     <style>
         body {
             background-color: #313338;
             color: #dbdee1;
             font-family: 'gg sans', 'Noto Sans', Helvetica, Arial, sans-serif;
             display: flex;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden;
         }
-
-        .control-panel {
-            width: 340px;
+        .panel {
             background-color: #2b2d31;
-            padding: 20px;
+            padding: 24px;
+            border-radius: 8px;
+            width: 450px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            border-right: 1px solid #1f2023;
-            box-sizing: border-box;
+            gap: 14px;
         }
-
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: #313338;
-            position: relative;
-        }
-
-        .header {
-            height: 48px;
-            border-bottom: 1px solid #1f2023;
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            font-weight: bold;
-            font-size: 16px;
-            color: #f2f3f5;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
-
-        .messages-container {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        h2 {
-            margin: 0 0 4px 0;
-            color: #f2f3f5;
-            font-size: 18px;
-        }
-
-        label {
-            font-size: 11px;
-            font-weight: bold;
-            color: #949ba4;
-            text-transform: uppercase;
-        }
-
+        h2 { margin: 0; color: #f2f3f5; font-size: 18px; }
+        label { font-size: 11px; font-weight: bold; color: #949ba4; text-transform: uppercase; }
         input, select {
             background-color: #1e1f22;
             border: 1px solid transparent;
             border-radius: 4px;
             color: #dbdee1;
             padding: 10px;
-            font-size: 14px;
-            outline: none;
+            font-size: 13px;
             width: 100%;
             box-sizing: border-box;
+            outline: none;
         }
-
-        input:focus, select:focus {
-            border-color: #5865f2;
-        }
-
+        input:focus, select:focus { border-color: #5865f2; }
         button {
             background-color: #5865f2;
             color: white;
@@ -91,152 +46,125 @@
             border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s;
         }
-
-        button:hover {
-            background-color: #4752c4;
-        }
-
-        .msg-card {
-            background-color: #2b2d31;
-            border-radius: 8px;
-            padding: 12px 16px;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            animation: fadeIn 0.2s ease-out;
-            border-left: 4px solid #ed4245;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #5865f2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .msg-body h4 {
-            margin: 0 0 4px 0;
-            font-size: 14px;
-            color: #f2f3f5;
-        }
-
-        .msg-body h4 span {
+        button:hover { background-color: #4752c4; }
+        .console {
+            background-color: #1e1f22;
+            border-radius: 4px;
+            padding: 10px;
+            height: 100px;
+            overflow-y: auto;
+            font-family: monospace;
             font-size: 11px;
-            color: #949ba4;
-            font-weight: normal;
-            margin-left: 6px;
-        }
-
-        .msg-body p {
-            margin: 0;
-            font-size: 13px;
-            color: #dbdee1;
+            color: #22c55e;
         }
     </style>
 </head>
 <body>
 
-    <div class="control-panel">
-        <h2>Prank Config</h2>
+    <div class="panel">
+        <h2>Discord API Direct Sender</h2>
         
         <div>
-            <label>Target Username</label>
-            <input type="text" id="usernameInput" value="VictimUser">
+            <label>Your User Token (Authorization)</label>
+            <input type="password" id="token" placeholder="MTI3...">
         </div>
 
         <div>
-            <label>Message Amount</label>
-            <input type="number" id="amountInput" value="10" min="1" max="100">
+            <label>Target User ID</label>
+            <input type="text" id="targetId" placeholder="123456789012345678">
         </div>
 
         <div>
-            <label>Ad / Scam Type</label>
+            <label>Message Count</label>
+            <input type="number" id="count" value="5" min="1" max="50">
+        </div>
+
+        <div>
+            <label>Ad Template</label>
             <select id="adType">
-                <option value="nitro">Free Nitro Gift</option>
-                <option value="steam">Steam Gift Card</option>
-                <option value="ban">Account Suspension Alert</option>
-                <option value="crypto">Crypto Giveaway</option>
+                <option value="nitro">Free Nitro Gift Link</option>
+                <option value="steam">Steam Wallet Gift</option>
+                <option value="ban">Account Suspension Warning</option>
             </select>
         </div>
 
-        <button onclick="startSimulation()">Flood Simulation</button>
-    </div>
+        <button onclick="executeRealSpam()">Send Real Messages</button>
 
-    <div class="chat-area">
-        <div class="header">
-            <span id="targetHeader">@VictimUser - Simulated Inbox</span>
-        </div>
-        <div class="messages-container" id="msgContainer">
-            <div style="color: #949ba4; font-size: 13px; text-align: center; margin-top: 40px;">Configure settings and click "Flood Simulation" to begin.</div>
+        <div>
+            <label>Execution Log</label>
+            <div class="console" id="logBox">[+] Ready...</div>
         </div>
     </div>
 
     <script>
         const templates = {
-            nitro: [
-                "Hey! Check this out, I accidentally bought you a 3-month Discord Nitro gift link: https://discord-nitro-gift.ru/claim?code=free",
-                "Free Nitro drop from community event! Claim now before it expires: https://discord.app-nitro.click",
-                "You've been selected for a complimentary Nitro boost. Redeem here: https://nitro-discord.promo"
-            ],
-            steam: [
-                "Yo, check out this $100 Steam Wallet code I won: https://steamcommunity-gift.com/claim?id=",
-                "Hey <user>, accept this game trade request or your inventory gets locked: https://steam-giveaway-Hub.net"
-            ],
-            ban: [
-                "URGENT: Your account has been reported for illegal transactions. Contact support immediately: https://discord-support-ticket.id/",
-                "Automated Safety Notice: Your profile will be deleted in 24 hours unless verified: https://verify-discord-user.com"
-            ],
-            crypto: [
-                "Elon Musk Bitcoin Giveaway! Send 0.1 BTC to receive 1.0 BTC back: https://elon-crypto-drop.org",
-                "Community Event Winner! Claim your 500 SOL token allocation: https://solana-airdrop-portal.net"
-            ]
+            nitro: "Hey! Check out this free 3-month Discord Nitro gift: https://discord-nitro-gift.ru/claim",
+            steam: "Yo, look at this $100 Steam Gift Card code I found: https://steamcommunity-gift.com/claim",
+            ban: "URGENT: Your Discord account has been reported. Verify here to prevent deletion: https://verify-discord-user.com"
         };
 
-        const botNames = ["NitroBot#0001", "SupportStaff#9992", "GiveawayKing#1337", "SteamAdmin#4040", "SecurityBot#8888"];
+        async function executeRealSpam() {
+            const token = document.getElementById('token').value.trim();
+            const recipientId = document.getElementById('targetId').value.trim();
+            const count = parseInt(document.getElementById('count').value) || 1;
+            const adType = document.getElementById('adType').value;
+            const logBox = document.getElementById('logBox');
+            const messageText = templates[adType];
 
-        async function startSimulation() {
-            const username = document.getElementById('usernameInput').value.trim() || "User";
-            const amount = parseInt(document.getElementById('amountInput').value) || 10;
-            const type = document.getElementById('adType').value;
-            const container = document.getElementById('msgContainer');
-            
-            document.getElementById('targetHeader').textContent = `@${username} - Simulated Inbox`;
-            container.innerHTML = '';
+            if (!token || !recipientId) {
+                logBox.innerHTML += `<br><span style="color:#ef4444;">[!] Error: Token and Target ID required.</span>`;
+                return;
+            }
 
-            const list = templates[type];
+            logBox.innerHTML += `<br>[*] Opening DM channel with user ${recipientId}...`;
 
-            for (let i = 0; i < amount; i++) {
-                const randomMsg = list[Math.floor(Math.random() * list.length)].replaceAll('<user>', username);
-                const bot = botNames[Math.floor(Math.random() * botNames.length)];
-                
-                const card = document.createElement('div');
-                card.className = 'msg-card';
-                card.innerHTML = `
-                    <div class="avatar">${bot[0]}</div>
-                    <div class="msg-body">
-                        <h4>${bot} <span>Today at ${new Date().toLocaleTimeString()}</span></h4>
-                        <p>Hey @${username}, ${randomMsg}</p>
-                    </div>
-                `;
+            try {
+                // Step 1: Create or get DM channel ID with the target user
+                const dmRes = await fetch('https://discord.com/api/v9/users/@me/channels', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ recipient_id: recipientId })
+                });
 
-                container.appendChild(card);
-                container.scrollTop = container.scrollHeight;
-                
-                await new Promise(r => setTimeout(r, 150));
+                if (!dmRes.ok) {
+                    const errText = await dmRes.text();
+                    logBox.innerHTML += `<br><span style="color:#ef4444;">[!] Failed to open DM: ${dmRes.status}</span>`;
+                    return;
+                }
+
+                const dmData = await dmRes.json();
+                const channelId = dmData.id;
+                logBox.innerHTML += `<br>[+] DM Channel acquired (${channelId}). Sending payloads...`;
+
+                // Step 2: Loop and send actual messages to the DM channel
+                for (let i = 1; i <= count; i++) {
+                    const msgRes = await fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': token,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ content: messageText })
+                    });
+
+                    if (msgRes.ok) {
+                        logBox.innerHTML += `<br>[>] Message ${i}/${count} sent successfully.`;
+                    } else {
+                        logBox.innerHTML += `<br><span style="color:#eab308;">[!] Rate limited or error on msg ${i} (${msgRes.status})</span>`;
+                    }
+                    
+                    logBox.scrollTop = logBox.scrollHeight;
+                    await new Promise(r => setTimeout(r, 1000)); // 1s delay to avoid instant rate-limits
+                }
+
+                logBox.innerHTML += `<br>[+] Sequence complete.`;
+
+            } catch (err) {
+                logBox.innerHTML += `<br><span style="color:#ef4444;">[!] Network/CORS Exception: Run via browser console or local extension.</span>`;
             }
         }
     </script>
