@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Discord - Direct Messages</title>
+    <style>
+        body {
+            background-color: #313338;
+            color: #dbdee1;
+            font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 72px;
+            background-color: #1e1f22;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 12px;
+            gap: 8px;
+        }
+
+        .server-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #313338;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            cursor: pointer;
+            transition: border-radius 0.2s, background-color 0.2s;
+        }
+
+        .server-icon:hover {
+            border-radius: 16px;
+            background-color: #5865f2;
+        }
+
+        .server-icon.active {
+            border-radius: 16px;
+            background-color: #5865f2;
+        }
+
+        .main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #313338;
+            position: relative;
+        }
+
+        .header {
+            height: 48px;
+            border-bottom: 1px solid #1f2023;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            font-weight: bold;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .inbox-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .notification-card {
+            background-color: #2b2d31;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease-out forwards;
+            border-left: 4px solid #5865f2;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .notif-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .notif-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #eb459e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .notif-content h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            color: #f2f3f5;
+        }
+
+        .notif-content p {
+            margin: 0;
+            font-size: 12px;
+            color: #949ba4;
+        }
+
+        .badge {
+            background-color: #ed4245;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .control-overlay {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: #111214;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #27272a;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .control-overlay button {
+            background-color: #5865f2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .control-overlay button:hover {
+            background-color: #4752c4;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="server-icon active">DC</div>
+        <div class="server-icon">⚡</div>
+        <div class="server-icon">+</div>
+    </div>
+
+    <div class="main-panel">
+        <div class="header">
+            <span>📥 Simulated Inbox Spammer Prank</span>
+        </div>
+
+        <div class="inbox-container" id="inbox">
+            <!-- Dynamic notification rows load here -->
+        </div>
+
+        <div class="control-overlay">
+            <span style="font-size: 12px; color: #949ba4;" id="counter">Total pings: 0</span>
+            <button onclick="triggerSpam()">Trigger Spam Flood</button>
+        </div>
+    </div>
+
+    <script>
+        const senders = [
+            {name: "NitroBot#0001", msg: "Claim your 3 months of free Discord Nitro now!"},
+            {name: "SystemAlert#4040", msg: "Your account has been reported by multiple users."},
+            {name: "GiveawayKing#7777", msg: "You won a $100 Steam Gift Card! Click to redeem."},
+            {name: "ModMail#1337", msg: "You have been permanently banned from r/Gaming."},
+            {name: "ServerCop#9999", msg: "Unusual login attempt detected from IP 192.168.1.1"}
+        ];
+
+        let count = 0;
+        let spamInterval = null;
+
+        function triggerSpam() {
+            if (spamInterval) {
+                clearInterval(spamInterval);
+                spamInterval = null;
+                event.target.textContent = "Trigger Spam Flood";
+                return;
+            }
+            
+            event.target.textContent = "Stop Spam";
+            spamInterval = setInterval(() => {
+                const inbox = document.getElementById('inbox');
+                const randomSender = senders[Math.floor(Math.random() * senders.length)];
+                
+                count++;
+                document.getElementById('counter').textContent = `Total pings: ${count}`;
+
+                const card = document.createElement('div');
+                card.className = 'notification-card';
+                card.innerHTML = `
+                    <div class="notif-left">
+                        <div class="notif-avatar">${randomSender.name[0]}</div>
+                        <div class="notif-content">
+                            <h4>${randomSender.name} <span style="font-size:10px; color:#949ba4;">Today at ${new Date().toLocaleTimeString()}</span></h4>
+                            <p>${randomSender.msg}</p>
+                        </div>
+                    </div>
+                    <div class="badge">NEW</div>
+                `;
+
+                inbox.prepend(card);
+                
+                if (inbox.children.length > 30) {
+                    inbox.lastChild.remove();
+                }
+            }, 150);
+        }
+    </script>
+</body>
+</html>
